@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>GiftBoost</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: system-ui, -apple-system, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+            user-select: none;
+        }
+
+        body {
+            background: #000;
+            color: #fff;
+            height: 100vh;
+            height: 100dvh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .app {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+            position: relative;
+        }
+
+        /* Шапка */
+        .header {
+            padding: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            z-index: 10;
+        }
+
+        .logo {
+            font-size: 20px;
+            font-weight: 800;
+            letter-spacing: 1px;
+        }
+
+        .logo span {
+            color: #ffd700;
+        }
+
+        /* Красивый баланс */
+        .balance-pill {
+            display: flex;
+            align-items: center;
+            background: #1c1c1e;
+            border-radius: 20px;
+            padding: 4px 4px 4px 12px;
+            gap: 8px;
+            border: 1px solid rgba(255, 215, 0, 0.2);
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .balance-pill:active {
+            background: #2a2a2a;
+        }
+
+        /* Фикс звездочки */
+        .balance-pill .star {
+            color: #ffd700;
+            font-size: 14px;
+            line-height: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding-bottom: 1px; /* Легкая оптическая коррекция */
+        }
+
+        .balance-pill .amount {
+            font-size: 14px;
+            font-weight: 700;
+            color: #fff;
+            line-height: 1;
+            display: flex;
+            align-items: center;
+        }
+
+        .balance-pill .plus {
+            width: 24px;
+            height: 24px;
+            background: #ffd700;
+            color: #000;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 900;
+            font-size: 18px;
+            line-height: 1;
+            padding-bottom: 2px; /* Центровка плюса */
+        }
+
+        /* Центральный блок */
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 20px;
+            margin-top: -40px;
+        }
+
+        .dev-title {
+            font-size: 26px;
+            font-weight: 900;
+            text-transform: uppercase;
+            color: #fff;
+            margin-bottom: 8px;
+            letter-spacing: 1px;
+            text-shadow: 0 0 20px rgba(255, 215, 0, 0.15);
+        }
+
+        .dev-subtitle {
+            font-size: 13px;
+            color: rgba(255, 255, 255, 0.4);
+            font-weight: 500;
+            letter-spacing: 0.5px;
+        }
+
+        /* Навигация */
+        .bottom-nav {
+            display: flex;
+            justify-content: space-around;
+            padding: 12px 16px 28px;
+            background: #0a0a0c;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+            z-index: 20;
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+            color: #555;
+            font-size: 11px;
+            font-weight: 500;
+            background: none;
+            border: none;
+            cursor: pointer;
+            position: relative;
+            transition: color 0.2s, transform 0.1s;
+            width: 70px;
+        }
+
+        .nav-item:active {
+            transform: scale(0.95);
+        }
+
+        .nav-item.active {
+            color: #ffd700;
+        }
+
+        .nav-item.active::after {
+            content: '';
+            position: absolute;
+            top: -12px;
+            width: 4px;
+            height: 4px;
+            background: #ffd700;
+            border-radius: 50%;
+            box-shadow: 0 0 8px #ffd700;
+        }
+
+        .nav-item svg {
+            width: 24px;
+            height: 24px;
+            stroke: currentColor;
+            stroke-width: 2;
+            fill: none;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
+        /* Бейдж "Скоро" */
+        .soon-badge {
+            position: absolute;
+            top: -2px;
+            right: 8px;
+            background: #ffd700;
+            color: #000;
+            font-size: 7px;
+            font-weight: 900;
+            padding: 1px 4px;
+            border-radius: 4px;
+            text-transform: uppercase;
+        }
+    </style>
+</head>
+<body>
+    <div class="app">
+        <!-- Шапка с балансом -->
+        <header class="header">
+            <div class="logo">Gift<span>Boost</span></div>
+            
+            <div class="balance-pill">
+                <span class="star">★</span>
+                <span class="amount" id="balance">0</span>
+                <div class="plus">+</div>
+            </div>
+        </header>
+
+        <!-- Центральный текст -->
+        <main class="main-content">
+            <div class="dev-title">Казино в разработке</div>
+            <div class="dev-subtitle">by @kasper</div>
+        </main>
+
+        <!-- Навигация (3 кнопки) -->
+        <nav class="bottom-nav">
+            <button class="nav-item active" onclick="setActive(this)">
+                <svg viewBox="0 0 24 24">
+                    <circle cx="12" cy="12" r="10"/>
+                    <path d="M12 6v6l4 2"/>
+                </svg>
+                <span>Колесо</span>
+            </button>
+            
+            <button class="nav-item" onclick="setActive(this)">
+                <svg viewBox="0 0 24 24">
+                    <rect x="2" y="6" width="20" height="12" rx="2"/>
+                    <path d="M6 12h4M8 10v4"/>
+                    <circle cx="15" cy="12" r="1"/>
+                    <circle cx="18" cy="12" r="1"/>
+                </svg>
+                <span>Игры</span>
+                <div class="soon-badge">Скоро</div>
+            </button>
+            
+            <button class="nav-item" onclick="setActive(this)">
+                <svg viewBox="0 0 24 24">
+                    <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/>
+                    <circle cx="12" cy="7" r="4"/>
+                </svg>
+                <span>Профиль</span>
+            </button>
+        </nav>
+    </div>
+
+    <script>
+        // Визуальное переключение вкладок (без логики)
+        function setActive(element) {
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            element.classList.add('active');
+        }
+    </script>
+</body>
+</html>
